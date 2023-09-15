@@ -10,4 +10,5 @@ def load_data(filename: str) -> pd.DataFrame:
     Returns:
         pd.DataFrame: _description_
     """
-    pass
+    return pd.read_csv(filename)
+
