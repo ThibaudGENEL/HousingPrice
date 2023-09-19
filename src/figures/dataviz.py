@@ -2,11 +2,39 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from scipy import stats
 
 df = pd.read_csv("data/house_prices.csv")
 
 
 def dataviz_univariate(df):
+    """
+    Generate univariate visualizations for each column in a DataFrame.
+
+    Parameters:
+    df (pd.DataFrame): The DataFrame containing the data to visualize.
+
+    Returns:
+    None
+
+    Example:
+    --------
+    import pandas as pd
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+
+    # Create a sample DataFrame
+    data = {
+        'Age': [25, 30, 35, 40, 45],
+        'Weight_kg': [70, 65, 80, 75, 72],
+        'Gender': ['Male', 'Female', 'Male', 'Female', 'Male']
+    }
+    df = pd.DataFrame(data)
+
+    # Generate univariate visualizations
+    dataviz_univariate(df)
+    """
+
     cols_to_analyze = df.columns
 
     # PARAM graphes
@@ -64,11 +92,85 @@ def dataviz_univariate(df):
                 plt.text(1, -0.15, f'n = {df[col].count()}', 
                 horizontalalignment='right', verticalalignment='top', fontsize=8, 
                 transform=plt.gca().transAxes)
-                plt.show()    
+                plt.show()
+
+
+def dataviz_bivariate(data, var):
+    """
+    Generate bivariate visualizations for comparing a variable with all columns in a DataFrame.
+
+    Parameters:
+    data (pd.DataFrame): The DataFrame containing the data to visualize.
+    var (str): The variable to compare with all other columns.
+
+    Returns:
+    None
+
+    Example:
+    --------
+    import pandas as pd
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    from scipy import stats
+
+    # Create a sample DataFrame
+    data = {
+        'Age': [25, 30, 35, 40, 45],
+        'Weight_kg': [70, 65, 80, 75, 72],
+        'Gender': ['Male', 'Female', 'Male', 'Female', 'Male']
+    }
+    df = pd.DataFrame(data)
+
+    # Generate bivariate visualizations
+    dataviz_bivariate(df, 'Age')
+    """
+
+    cols_to_analyze = data.columns
+
+    for col in cols_to_analyze:  # Pour chaque colonne à comparer
+
+        if pd.api.types.is_numeric_dtype(data[col]):  # SI colonne numérique ; nuage de points
+            plt.figure(figsize=(6, 3.5))
+            sns.regplot(data=data, x=var, y=col, scatter_kws={"color": "black", "alpha": 0.5, "s": 20},
+                        line_kws={"color": "red"})
+            plt.ylabel(col, weight='bold')
+            plt.xlabel(var)
+            plt.title(f"{[col]} vs {var}", weight='bold')
+            plt.text(1, -0.12, f'n = {data[col].count()}',
+                     horizontalalignment='right', verticalalignment='top', fontsize=8,
+                     transform=plt.gca().transAxes)
+            plt.show()
+
+            correlation, p_value = stats.pearsonr(data[col].fillna(data[col].median()), data[var].fillna(data[var].median()))
+            print("Pearson's correlation:", correlation)
+            print("P-value:", p_value, "\n")
+
+        else:  # Si colonne categ
+            plt.figure(figsize=(8, 5))  # Set figure size
+            sns.boxplot(x=col, y=var, data=data)  # Create a boxplot with the color palette
+            plt.xlabel(col, weight='bold', fontsize=12)  # Set x-axis title
+            plt.ylabel(var, weight='bold', fontsize=12)  # Set y-axis title
+            plt.title(f"{var} By {[col]}", weight='bold', fontsize=14)  # Set plot title
+            plt.tight_layout()  # Automatically adjust padding
+            plt.text(1, -0.1, f'n = {data[col].count()}',
+                     horizontalalignment='right', verticalalignment='top', fontsize=8,
+                     transform=plt.gca().transAxes)
+            plt.show()
+
+            # test ANOVA
+            group_data = [data[data[col] == mod][var].dropna() for mod in data[col].dropna().unique()]
+            fval, pval = stats.f_oneway(*group_data)
+            print(f"ANOVA Test, {var} on {[col]} (H0: Same mean {var} among modalities):")
+            print(f"F-value = {fval:.6f}")
+            print(f"P-value = {pval:.6f}")
+    
+
+
 
 # Utilisation de la fonction dataviz avec un DataFrame exemple
 # dataviz(df)
 
 
 
-dataviz_univariate(df)
+# dataviz_univariate(df)
+dataviz_bivariate(df, "AreA")
