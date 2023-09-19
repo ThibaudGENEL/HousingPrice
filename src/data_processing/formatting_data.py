@@ -13,4 +13,4 @@ def formatting(df):
     df.rename(columns={'Furnishing status':'Furnishing_Status','Air conditioning':'Air_Conditioning','Hotwaterheating':'Hot_Water_Heating','Houseage':'House_Age'},inplace=True)
     
     df['Furnishing_Status']= df['Furnishing_Status'].apply(lambda x : x.lower().capitalize() if pd.notna(x) else x)
-    df.replace({'yes':True,'no':False})
+    df.replace({'yes':True,'no':False},inplace = True)
