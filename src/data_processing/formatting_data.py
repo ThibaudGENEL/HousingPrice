@@ -1,3 +1,5 @@
+import pandas as pd
+
 def formatting(df):
     
     """Perform data formatting operations on a DataFrame.
@@ -14,3 +16,4 @@ def formatting(df):
     
     df['Furnishing_Status']= df['Furnishing_Status'].apply(lambda x : x.lower().capitalize() if pd.notna(x) else x)
     df.replace({'yes':True,'no':False},inplace = True)
+    

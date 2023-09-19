@@ -4,8 +4,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy import stats
 
-df = pd.read_csv("data/house_prices.csv")
-
 
 def dataviz_univariate(df):
     """
@@ -166,11 +164,3 @@ def dataviz_bivariate(data, var):
     
 
 
-
-# Utilisation de la fonction dataviz avec un DataFrame exemple
-# dataviz(df)
-
-
-
-# dataviz_univariate(df)
-dataviz_bivariate(df, "AreA")
