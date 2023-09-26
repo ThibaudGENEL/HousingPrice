@@ -105,31 +105,15 @@ def dataviz_bivariate(data, var):
 
     Returns:
     None
-
-    Example:
-    --------
-    import pandas as pd
-    import seaborn as sns
-    import matplotlib.pyplot as plt
-    from scipy import stats
-
-    # Create a sample DataFrame
-    data = {
-        'Age': [25, 30, 35, 40, 45],
-        'Weight_kg': [70, 65, 80, 75, 72],
-        'Gender': ['Male', 'Female', 'Male', 'Female', 'Male']
-    }
-    df = pd.DataFrame(data)
-
-    # Generate bivariate visualizations
-    dataviz_bivariate(df, 'Age')
     """
 
     cols_to_analyze = data.columns
 
     for col in cols_to_analyze:  # Pour chaque colonne à comparer
+        if col == var:
+            pass        # Inutile de croiser var avec var
 
-        if pd.api.types.is_numeric_dtype(data[col]):  # SI colonne numérique ; nuage de points
+        elif pd.api.types.is_numeric_dtype(data[col]):  # SI colonne numérique ; nuage de points
             plt.figure(figsize=(6, 3.5))
             sns.regplot(data=data, x=var, y=col, scatter_kws={"color": "black", "alpha": 0.5, "s": 20},
                         line_kws={"color": "red"})
