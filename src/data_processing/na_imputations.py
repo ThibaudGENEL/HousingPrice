@@ -13,7 +13,7 @@ SEED = 13
 
 def df_na_imputed(df, SEED = SEED):
     """
-    Impute missing values in this specific DataFrame using various techniques.
+    Impute missing values in the specific houses DataFrame using various techniques.
 
     Parameters:
     data (DataFrame): Input DataFrame containing missing values. NB / Function restricted to our House DataFrame, won't work on another one
