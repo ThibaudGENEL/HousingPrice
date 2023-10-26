@@ -11,7 +11,7 @@ from config.config import TEST_RATIO, SEED
 
 
 #Loading data
-data = pd.read_pickle("df_ready.pkl")
+data = pd.read_pickle("data/df_ready.pkl")
 
 #Function baseline
 def baseline_model(data, variable, train_sizes = [10, 50, 100, 250, 500, 700], seed = SEED, plot_mse = True, add_column=True):
@@ -49,7 +49,10 @@ def baseline_model(data, variable, train_sizes = [10, 50, 100, 250, 500, 700], s
 
         #Model
         variable_price_dict = data_train.groupby(variable)["Price"].mean().to_dict()  #{numb of bedrooms : mean price}
-        data_test[f"Price_Baseline_{variable}"] = data_test[variable].apply(lambda x: variable_price_dict.get(x, 0))     # Attribution in test set
+        price_if_not_in_train = data_train["Price"].mean()      # If the train doesn't include a house with x numbers of bedrooms
+
+        #Applying model onto test
+        data_test[f"Price_Baseline_{variable}"] = data_test[variable].apply(lambda x: variable_price_dict.get(x, price_if_not_in_train))     # Attribution in test set
 
         # Compute MAE and append to mae_errors
         mae =  np.abs(data_test["Price"] - data_test[f"Price_Baseline_{variable}"]).mean()
@@ -60,7 +63,7 @@ def baseline_model(data, variable, train_sizes = [10, 50, 100, 250, 500, 700], s
         # Plotting the results
         plt.plot(train_sizes, mae_errors, '-o')
         plt.xlabel('Training Size')
-        plt.ylabel('Mean Squared Error (MAE)')
+        plt.ylabel('Mean Absolute Error (MAE)')
         plt.title(f'Performance of Baseline {variable} Model by Training Size')
         plt.grid(True)
         plt.show()
@@ -75,6 +78,23 @@ def baseline_model(data, variable, train_sizes = [10, 50, 100, 250, 500, 700], s
 # baseline_model(data= data, variable= "Bedrooms")
 
 def baseline_model_n_times(n, data, variable, train_sizes = [10, 50, 100, 250, 500, 700]):
+    """
+    Executes the baseline model multiple times with randomized train/test splits 
+    and visualizes the mean performance over iterations.
+
+    Parameters:
+    - n (int): Number of times to run the baseline model with randomized train/test splits.
+    - data (pd.DataFrame): Input dataframe containing at least the specified variable and "Price".
+    - variable (str): Variable on which the baseline model is based.
+    - train_sizes (list of int, optional): Desired training data sizes. Defaults to [10, 50, 100, 250, 500, 700].
+
+    Returns:
+    - pd.Series: Mean MAE for each training size across all iterations.
+
+    Example:
+    >>> df = pd.DataFrame({'Bedrooms': [1,2,2,3,3,3], 'Price': [100,200,210,310,300,290]})
+    >>> mean_mae_results = baseline_model_n_times(5, df, "Bedrooms")
+    """
     all_errors = []
     np.random.seed(SEED)
     for i in range(n):
@@ -89,7 +109,7 @@ def baseline_model_n_times(n, data, variable, train_sizes = [10, 50, 100, 250, 5
     plt.figure(figsize=(12, 8))
     plt.plot(grouped_by_size_mean_mae, '-o')
     plt.xlabel('Training Size')
-    plt.ylabel('Mean Squared Error (MAE)')
+    plt.ylabel('Mean Absolute Error (MAE)')
     plt.title(f'Mean performance of Baseline {variable} Model by Training Size', fontsize=16, weight="bold")
     plt.suptitle(f"\nMean of MAE over {n} iterations of the model with random (thus different) train/test samples", y=0.9, fontsize=9)
     plt.grid(True)
