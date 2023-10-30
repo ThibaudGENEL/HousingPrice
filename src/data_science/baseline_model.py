@@ -14,7 +14,7 @@ from config.config import TEST_RATIO, SEED
 data = pd.read_pickle("data/df_ready.pkl")
 
 #Function baseline
-def baseline_model(data, variable, train_sizes = [10, 50, 100, 250, 500, 700], seed = SEED, plot_mse = True, add_column=True):
+def baseline_model(data, variable, train_sizes = [10, 50, 100, 250, 500, 700], seed = SEED, plot_mae = True, add_column=True):
     """
     Creates a baseline model using the average price for each unique value of the 
     given variable. 
@@ -59,7 +59,7 @@ def baseline_model(data, variable, train_sizes = [10, 50, 100, 250, 500, 700], s
         mae_errors.append(mae)
         errors = pd.DataFrame({"train_size": pd.Series(train_sizes), "mae": pd.Series(mae_errors)})
 
-    if plot_mse:
+    if plot_mae:
         # Plotting the results
         plt.plot(train_sizes, mae_errors, '-o')
         plt.xlabel('Training Size')
@@ -98,7 +98,7 @@ def baseline_model_n_times(n, data, variable, train_sizes = [10, 50, 100, 250, 5
     all_errors = []
     np.random.seed(SEED)
     for i in range(n):
-        errors = baseline_model(data, variable, train_sizes, seed=np.random.randint(1, 100), plot_mse=False, add_column=False)
+        errors = baseline_model(data, variable, train_sizes, seed=np.random.randint(1, 100), plot_mae=False, add_column=False)
         all_errors.append(errors)
     
     errors_mixture = pd.concat(all_errors, ignore_index=True)
