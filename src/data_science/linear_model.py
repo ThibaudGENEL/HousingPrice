@@ -59,7 +59,7 @@ def linear_model(data,seed=SEED,train_sizes = [10, 50, 100, 250, 500, 700],plot_
 
     errors = pd.DataFrame({"train_size": pd.Series(train_sizes), "mae": pd.Series(mae_errors),"R2": pd.Series(r2_errors)})
 
-    return errors,predictions,y_real
+    return errors
 
 def linear_model_n_times(n, data):
     all_errors = []
@@ -67,7 +67,7 @@ def linear_model_n_times(n, data):
     np.random.seed(SEED)
     for i in range(n):
         errors = linear_model(data,seed=np.random.randint(1, 100), plot_mae=False, plot_r2=False,add_column=False)
-        all_errors.append(errors[0])
+        all_errors.append(errors)
 
     
     errors_mixture = pd.concat(all_errors, ignore_index=True)
