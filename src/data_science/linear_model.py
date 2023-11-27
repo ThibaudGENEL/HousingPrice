@@ -5,6 +5,7 @@ from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.linear_model import LinearRegression
 from src.data_science.data import split_data
 from config.config import TEST_RATIO, SEED
+from sklearn.preprocessing import MinMaxScaler
 
 
 #Loading data
@@ -14,27 +15,51 @@ df = pd.read_pickle("data/df_ready.pkl")
 
 
 def linear_model(data,seed=SEED,train_sizes = [10, 50, 100, 250, 500, 700],plot_mae=True,plot_r2=True,add_column=True):
+    """
+    Perform linear regression on the given data for different training sizes.
+    
+    Parameters:
+    - data: DataFrame, input data
+    - seed: int, random seed for data splitting
+    - train_sizes: list, sizes of training data to use
+    - plot_mae: bool, whether to plot MAE
+    - plot_r2: bool, whether to plot R2 score
+    - add_column: bool, whether to add a column with linear regression predictions to the DataFrame
+    
+    Returns:
+    - errors: DataFrame, containing train sizes, MAE, and R2 for each iteration
+    - models: list, containing linear regression models for each iteration
+    """
+
     mae_errors = []
     r2_errors=[]
     predictions= []
     y_real=[]
+    model=[]
+
     for train_size in train_sizes :
         test_ratio = 1 - train_size / data.shape[0] 
         X_train, y_train, X_test, y_test = split_data(data, test_ratio, seed)
+        X_column = X_train.columns
+
+        scaler = MinMaxScaler().fit(X_train)
+
+        X_train = pd.DataFrame(scaler.transform(X_train),columns=X_column)
+        X_test =  pd.DataFrame(scaler.transform(X_test),columns=X_column)
 
         linear_models = LinearRegression()
-
         linear_models.fit(X_train, y_train)
 
         prediction = linear_models.predict(X_test)
-
         predictions.append(prediction)
         y_real.append(y_test)
         mae = mean_absolute_error(y_test, prediction)
         r2 = r2_score(y_test, prediction)
 
+
         mae_errors.append(mae)
         r2_errors.append(r2)
+        model.append(linear_models)
 
     if plot_mae:
         # Plotting the results
@@ -55,11 +80,13 @@ def linear_model(data,seed=SEED,train_sizes = [10, 50, 100, 250, 500, 700],plot_
 
     if add_column:
         
-        data["Price_Linear_Regression"] = linear_models.predict(data.drop('Price', axis=1))
+        data["Price_Linear_Regression"] = linear_models.predict(scaler.transform(data.drop('Price', axis=1)))
 
     errors = pd.DataFrame({"train_size": pd.Series(train_sizes), "mae": pd.Series(mae_errors),"R2": pd.Series(r2_errors)})
 
-    return errors
+    return [errors,model]
+
+
 
 def linear_model_n_times(n, data):
     all_errors = []
@@ -67,7 +94,7 @@ def linear_model_n_times(n, data):
     np.random.seed(SEED)
     for i in range(n):
         errors = linear_model(data,seed=np.random.randint(1, 100), plot_mae=False, plot_r2=False,add_column=False)
-        all_errors.append(errors)
+        all_errors.append(errors[0])
 
     
     errors_mixture = pd.concat(all_errors, ignore_index=True)
